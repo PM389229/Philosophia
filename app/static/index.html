@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PhilosophIA</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Georgia', serif;
+      background: #0f0f0f;
+      color: #e8e0d0;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 2rem 1rem;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 2.5rem;
+    }
+
+    header h1 {
+      font-size: 2.4rem;
+      letter-spacing: 0.05em;
+      color: #c9a84c;
+    }
+
+    header p {
+      color: #888;
+      font-style: italic;
+      margin-top: 0.4rem;
+      font-size: 0.95rem;
+    }
+
+    .corpus-badge {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.4rem;
+      justify-content: center;
+      margin-top: 1rem;
+    }
+
+    .corpus-badge span {
+      background: #1e1e1e;
+      border: 1px solid #333;
+      color: #aaa;
+      font-size: 0.72rem;
+      padding: 0.2rem 0.6rem;
+      border-radius: 999px;
+      font-family: monospace;
+    }
+
+    .search-box {
+      width: 100%;
+      max-width: 720px;
+      display: flex;
+      gap: 0.5rem;
+      margin-bottom: 2rem;
+    }
+
+    .search-box input {
+      flex: 1;
+      background: #1a1a1a;
+      border: 1px solid #333;
+      border-radius: 6px;
+      padding: 0.75rem 1rem;
+      color: #e8e0d0;
+      font-size: 1rem;
+      font-family: 'Georgia', serif;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    .search-box input:focus { border-color: #c9a84c; }
+
+    .search-box button {
+      background: #c9a84c;
+      color: #0f0f0f;
+      border: none;
+      border-radius: 6px;
+      padding: 0.75rem 1.4rem;
+      font-size: 1rem;
+      font-weight: bold;
+      cursor: pointer;
+      transition: background 0.2s;
+      white-space: nowrap;
+    }
+
+    .search-box button:hover { background: #e0bf6a; }
+    .search-box button:disabled { background: #555; cursor: not-allowed; }
+
+    .suggestions {
+      width: 100%;
+      max-width: 720px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .suggestions button {
+      background: #1a1a1a;
+      border: 1px solid #2a2a2a;
+      color: #aaa;
+      border-radius: 20px;
+      padding: 0.35rem 0.85rem;
+      font-size: 0.82rem;
+      cursor: pointer;
+      font-family: 'Georgia', serif;
+      font-style: italic;
+      transition: all 0.2s;
+    }
+
+    .suggestions button:hover { border-color: #c9a84c; color: #c9a84c; }
+
+    #result {
+      width: 100%;
+      max-width: 720px;
+    }
+
+    .loader {
+      text-align: center;
+      color: #888;
+      font-style: italic;
+      padding: 2rem;
+    }
+
+    .loader::after {
+      content: '';
+      display: inline-block;
+      width: 1em;
+      animation: dots 1.2s infinite;
+    }
+
+    @keyframes dots {
+      0%   { content: '.'; }
+      33%  { content: '..'; }
+      66%  { content: '...'; }
+    }
+
+    .answer-card {
+      background: #161616;
+      border: 1px solid #2a2a2a;
+      border-radius: 10px;
+      padding: 1.5rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .answer-card h2 {
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: #c9a84c;
+      margin-bottom: 1rem;
+    }
+
+    .answer-text {
+      line-height: 1.75;
+      font-size: 0.97rem;
+      white-space: pre-wrap;
+    }
+
+    .sources {
+      margin-top: 1.2rem;
+      padding-top: 1rem;
+      border-top: 1px solid #222;
+    }
+
+    .sources h3 {
+      font-size: 0.72rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: #666;
+      margin-bottom: 0.6rem;
+    }
+
+    .sources ul {
+      list-style: none;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.4rem;
+    }
+
+    .sources li {
+      background: #1e1e1e;
+      border: 1px solid #2e2e2e;
+      border-radius: 4px;
+      padding: 0.25rem 0.6rem;
+      font-size: 0.8rem;
+      color: #bbb;
+    }
+
+    .sources li strong { color: #c9a84c; }
+
+    .chunks {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+
+    .chunk {
+      background: #141414;
+      border-left: 3px solid #2a2a2a;
+      padding: 0.75rem 1rem;
+      border-radius: 0 6px 6px 0;
+    }
+
+    .chunk-meta {
+      font-size: 0.72rem;
+      color: #c9a84c;
+      margin-bottom: 0.4rem;
+      font-family: monospace;
+    }
+
+    .chunk-text {
+      font-size: 0.82rem;
+      color: #999;
+      line-height: 1.6;
+      display: -webkit-box;
+      -webkit-line-clamp: 4;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+
+    .chunk:hover .chunk-text {
+      -webkit-line-clamp: unset;
+    }
+
+    .section-title {
+      font-size: 0.72rem;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: #555;
+      margin-bottom: 0.75rem;
+      margin-top: 1.5rem;
+    }
+
+    .error {
+      background: #1a0a0a;
+      border: 1px solid #5a1a1a;
+      border-radius: 8px;
+      padding: 1rem 1.2rem;
+      color: #e07070;
+      font-size: 0.9rem;
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>PhilosophIA</h1>
+  <p>Interroge les grands textes de la philosophie et de l'histoire</p>
+  <div class="corpus-badge">
+    <span>Platon</span>
+    <span>Nietzsche</span>
+    <span>Descartes</span>
+    <span>Machiavel</span>
+    <span>Thucydide</span>
+    <span>Marc Aurèle</span>
+    <span>Aristote</span>
+    <span>Hobbes</span>
+  </div>
+</header>
+
+<div class="search-box">
+  <input
+    type="text"
+    id="queryInput"
+    placeholder="Ex : Que dirait Thucydide sur les guerres modernes ?"
+    autocomplete="off"
+  />
+  <button id="askBtn" onclick="submitQuery()">Interroger</button>
+</div>
+
+<div class="suggestions">
+  <button onclick="setQuery('Que dirait Nietzsche sur la faiblesse ?')">Nietzsche sur la faiblesse</button>
+  <button onclick="setQuery('Comment Machiavel justifie-t-il la ruse du prince ?')">Machiavel & la ruse</button>
+  <button onclick="setQuery('Quelle est la meilleure forme de gouvernement selon Platon ?')">Gouvernement idéal</button>
+  <button onclick="setQuery('Comment Thucydide analyse-t-il les causes de la guerre ?')">Thucydide & la guerre</button>
+  <button onclick="setQuery('Que dit Descartes sur le doute et la certitude ?')">Descartes & le doute</button>
+  <button onclick="setQuery('Quelle est la vision de Marc Aurèle sur la mort ?')">Marc Aurèle & la mort</button>
+</div>
+
+<div id="result"></div>
+
+<script>
+  const input = document.getElementById('queryInput');
+  const btn = document.getElementById('askBtn');
+  const resultEl = document.getElementById('result');
+
+  input.addEventListener('keydown', e => {
+    if (e.key === 'Enter') submitQuery();
+  });
+
+  function setQuery(q) {
+    input.value = q;
+    input.focus();
+    submitQuery();
+  }
+
+  async function submitQuery() {
+    const query = input.value.trim();
+    if (!query) return;
+
+    btn.disabled = true;
+    resultEl.innerHTML = '<div class="loader">Consultation des textes</div>';
+
+    try {
+      const res = await fetch('/ask', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ query }),
+      });
+
+      if (!res.ok) {
+        const err = await res.json();
+        throw new Error(err.detail || 'Erreur serveur');
+      }
+
+      const data = await res.json();
+      render(data);
+    } catch (e) {
+      resultEl.innerHTML = `<div class="error">⚠ ${e.message}</div>`;
+    } finally {
+      btn.disabled = false;
+    }
+  }
+
+  function render(data) {
+    const sourcesHtml = data.sources.map(s =>
+      `<li><strong>${s.author}</strong> — ${s.title}</li>`
+    ).join('');
+
+    const chunksHtml = data.chunks.map(c => `
+      <div class="chunk">
+        <div class="chunk-meta">${c.author} — ${c.title}</div>
+        <div class="chunk-text">${escHtml(c.text)}</div>
+      </div>
+    `).join('');
+
+    resultEl.innerHTML = `
+      <div class="answer-card">
+        <h2>Réponse</h2>
+        <div class="answer-text">${escHtml(data.answer)}</div>
+        <div class="sources">
+          <h3>Sources mobilisées</h3>
+          <ul>${sourcesHtml}</ul>
+        </div>
+      </div>
+      <p class="section-title">Extraits utilisés (survol pour voir en entier)</p>
+      <div class="chunks">${chunksHtml}</div>
+    `;
+  }
+
+  function escHtml(str) {
+    return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  }
+</script>
+
+</body>
+</html>
