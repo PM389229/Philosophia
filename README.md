@@ -1,14 +1,14 @@
 # PhilosophIA
 
 Moteur de recherche sémantique sur corpus philosophique et historique.
-RAG (Retrieval-Augmented Generation) : ChromaDB + Claude (Anthropic API).
+RAG (Retrieval-Augmented Generation) : ChromaDB + Groq (Llama 3).
 
 ## Stack
 
 - **FastAPI** — API REST
 - **ChromaDB** — vector store local
 - **sentence-transformers** — embeddings (all-MiniLM-L6-v2)
-- **Claude (Anthropic API)** — LLM cloud
+- **Groq (Llama 3)** — LLM cloud
 - **HTML vanilla** — interface web
 
 ## Corpus
@@ -19,17 +19,17 @@ Platon, Nietzsche, Descartes, Machiavel, Thucydide, Marc Aurèle, Aristote, Hobb
 ## Installation
 
 ```bash
-# 1. Clé API Anthropic
-export ANTHROPIC_API_KEY=sk-ant-...
+# 1. Clé API Groq (gratuit sur console.groq.com)
+export GROQ_API_KEY=gsk_...
 
 # 2. Dépendances Python
 pip install -r requirements.txt
 
 # 3. Construire l'index (télécharge et indexe les textes ~5 min)
-python app/ingest.py
+python3 app/ingest.py
 
 # 4. Lancer le serveur
-uvicorn app.main:app --reload --port 8000
+python3 -m uvicorn app.main:app --reload --port 8000
 ```
 
 Ouvrir http://localhost:8000
