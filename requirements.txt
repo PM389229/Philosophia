@@ -2,8 +2,6 @@ fastapi==0.115.0
 uvicorn==0.30.6
 chromadb==0.5.15
 sentence-transformers==3.1.1
-langchain==0.3.1
-langchain-community==0.3.1
+langchain-text-splitters>=0.3.0,<0.4
 groq
 requests==2.32.3
-python-dotenv==1.0.1
